@@ -2,6 +2,9 @@
 
 Questo progetto contiene uno script Python automatizzato, che si aggiorna di mattina, progettato per monitorare, scaricare e archiviare quotidianamente le determinazioni e i documenti pubblicati sull'Albo Pretorio di Sardegna Ambiente (ARPAS).
 
+# I documenti si trovano dentro archive_data
+
+
 Lo script è pensato per garantire la **persistenza dei dati**: salva i file localmente con nomi leggibili e mantiene uno storico per evitare duplicati, anche se i documenti vengono rimossi dal sito originale.
 
 ## 🚀 Funzionalità Principali
