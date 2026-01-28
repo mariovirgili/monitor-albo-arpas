@@ -17,7 +17,7 @@ Lo script è pensato per garantire la **persistenza dei dati**: salva i file loc
 
 Una volta eseguito, lo script crea e gestisce automaticamente la seguente struttura di directory:
 
-```text
+
 /
 ├── archiver.py             # Lo script principale (Il motore del sistema)
 ├── README.md               # Questo file di documentazione
