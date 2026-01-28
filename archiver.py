@@ -1,6 +1,6 @@
 import os
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from datetime import datetime
 import json
 import hashlib
@@ -38,8 +38,6 @@ def clean_filename_from_title(title):
     Rimuove etichette come [file.pdf] e gestisce il formato della data.
     """
     # 1. Pulizia Aggressiva (Regex): Rimuove qualsiasi variante di [file.pdf]
-    # Cerca parentesi quadra aperta + parola 'file' + qualsiasi carattere + 'pdf' + eventuale parentesi chiusa
-    # flags=re.IGNORECASE rende la ricerca insensibile a maiuscole/minuscole
     clean_title = re.sub(r"\[\s*file.*?pdf\s*\]?", "", title, flags=re.IGNORECASE).strip()
     
     # Fallback predefinito: Usa la data di oggi se non si trova una data nel testo
@@ -57,13 +55,9 @@ def clean_filename_from_title(title):
         clean_title = re.sub(r"\s*(del)?\s*" + re.escape(date_match.group(0)), "", clean_title, flags=re.IGNORECASE)
 
     # 4. Sanifica il titolo rimanente per il filesystem
-    # Rimuove caratteri vietati nei nomi file
     clean_title = re.sub(r'[\\/*?:"<>|]', "", clean_title)
-    # Sostituisce gli spazi con underscore
     clean_title = clean_title.replace(" ", "_")
-    # Collassa underscore multipli in uno solo
     clean_title = re.sub(r"_+", "_", clean_title)
-    # Rimuove underscore o punti iniziali/finali residui
     clean_title = clean_title.strip("_. ")
 
     return f"{file_date_prefix}_{clean_title}.pdf"
@@ -80,6 +74,40 @@ def download_file(url, filepath):
     except Exception as e:
         print(f"Errore durante il download di {url}: {e}")
         return False
+
+def get_description_after_link(link_element):
+    """
+    Tenta di recuperare il testo descrittivo che segue immediatamente il link.
+    Es. <a...>Titolo</a>: DESCRIZIONE...
+    """
+    description = ""
+    next_node = link_element.next_sibling
+    
+    # Continua a cercare finché non trova testo significativo o un nuovo tag blocco
+    while next_node:
+        if isinstance(next_node, NavigableString):
+            text = str(next_node).strip()
+            if text and len(text) > 1: # Ignora punteggiatura singola isolata
+                description += text + " "
+                # Se abbiamo trovato un testo lungo, probabilmente è la descrizione, ci fermiamo
+                if len(description) > 5: 
+                    break
+        elif getattr(next_node, 'name', '') in ['br', 'span', 'strong']:
+            # Se è uno span o un a capo, prendiamo il testo dentro
+            text = next_node.get_text(" ", strip=True)
+            if text:
+                description += text + " "
+        else:
+            # Se incontriamo un altro link o un div, ci fermiamo
+            break
+        
+        next_node = next_node.next_sibling
+
+    # Pulizia finale della descrizione (rimuove : o - iniziali)
+    description = description.strip(" :-\n\t")
+    if not description:
+        return "Descrizione non disponibile nel testo adiacente."
+    return description
 
 def main():
     today_str = datetime.now().strftime("%Y-%m-%d")
@@ -133,11 +161,14 @@ def main():
             if full_url not in history:
                 print(f"Trovato nuovo documento: {text}")
                 
+                # Recupera la descrizione (contenuto) dopo il link
+                content_desc = get_description_after_link(link)
+                
                 # Generazione nome file pulito
                 filename = clean_filename_from_title(text)
                 local_path = os.path.join(PDF_DIR, filename)
                 
-                # Gestione duplicati nome file (aggiunge _v1, _v2 se necessario)
+                # Gestione duplicati nome file
                 counter = 1
                 while os.path.exists(local_path):
                     name, ext = os.path.splitext(filename)
@@ -146,19 +177,20 @@ def main():
                     
                 # Download
                 if download_file(full_url, local_path):
-                    # Salva nome file pulito nella history
                     saved_filename = os.path.basename(local_path)
                     
                     history[full_url] = {
                         "first_seen": today_str,
                         "local_path": saved_filename,
-                        "link_text": text
+                        "link_text": text,
+                        "content_preview": content_desc[:100] # Salviamo un'anteprima nella history
                     }
                     
                     new_items.append({
                         "text": text,
                         "url": full_url,
-                        "file": saved_filename
+                        "file": saved_filename,
+                        "content": content_desc
                     })
                     
                     time.sleep(1) 
@@ -181,6 +213,7 @@ def main():
                 f.write(f"Titolo Originale: {item['text']}\n")
                 f.write(f"URL: {item['url']}\n")
                 f.write(f"Salvato come: {item['file']}\n")
+                f.write(f"Contenuto: {item['content']}\n")
                 f.write("-" * 20 + "\n")
         else:
             f.write("Nessun nuovo documento trovato oggi.\n")
