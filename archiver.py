@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import hashlib
 import time
+import re
 
 # --- Configurazione ---
 TARGET_URL = "https://www.sardegnaambiente.it/arpas/arpas/albopretorio/"
@@ -20,22 +21,53 @@ for d in [DATA_DIR, PDF_DIR, HTML_DIR, MEMO_DIR]:
     os.makedirs(d, exist_ok=True)
 
 def load_history():
-    """Carica la cronologia dei download da un file JSON."""
+    """Carica la cronologia dei download dal file JSON."""
     if os.path.exists(HISTORY_FILE):
         with open(HISTORY_FILE, 'r') as f:
             return json.load(f)
     return {}
 
 def save_history(history):
-    """Salva la cronologia dei download su un file JSON."""
+    """Salva la cronologia dei download nel file JSON."""
     with open(HISTORY_FILE, 'w') as f:
         json.dump(history, f, indent=4)
 
-def get_filename_from_url(url):
-    """Genera un nome file sicuro partendo da un URL."""
-    # Usa l'MD5 dell'URL per garantire unicità e gestire stringhe complesse
-    hash_object = hashlib.md5(url.encode())
-    return f"{hash_object.hexdigest()}.pdf"
+def clean_filename_from_title(title):
+    """
+    Genera un nome file basato sul titolo del documento e la sua data interna.
+    Fallback: Se non viene trovata alcuna data nel titolo, utilizza la data odierna.
+    Formato finale: AAAA-MM-GG_Titolo_con_underscore.pdf
+    """
+    # 1. Pulisce il testo "spazzatura" come [file.pdf]
+    clean_title = title.replace("[file.pdf]", "").replace("[file. pdf]", "").strip()
+    
+    # Fallback predefinito: Usa la data di oggi se non si trova una data nel testo
+    file_date_prefix = datetime.now().strftime("%Y-%m-%d")
+    
+    # 2. Estrae la data (gg/mm/aaaa) dal titolo
+    # La regex cerca giorno/mese/anno
+    date_match = re.search(r"(\d{1,2})/(\d{1,2})/(\d{4})", clean_title)
+    
+    if date_match:
+        day, month, year = date_match.groups()
+        # Crea la data in formato ISO: AAAA-MM-GG dalla data trovata
+        file_date_prefix = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+        
+        # 3. Rimuove la data e la parola "del" dal titolo per evitare duplicazioni
+        # Viene fatto solo se una data è stata effettivamente trovata nel titolo
+        clean_title = re.sub(r"\s*(del)?\s*" + re.escape(date_match.group(0)), "", clean_title, flags=re.IGNORECASE)
+
+    # 4. Sanifica il titolo rimanente
+    # Rimuove caratteri non validi per i nomi file (come / \ : * ? " < > |)
+    clean_title = re.sub(r'[\\/*?:"<>|]', "", clean_title)
+    # Sostituisce gli spazi con underscore
+    clean_title = clean_title.replace(" ", "_")
+    # Collassa underscore multipli in uno solo
+    clean_title = re.sub(r"_+", "_", clean_title)
+    # Rimuove underscore o punti iniziali/finali
+    clean_title = clean_title.strip("_. ")
+
+    return f"{file_date_prefix}_{clean_title}.pdf"
 
 def download_file(url, filepath):
     """Scarica un file da un URL in un percorso specifico."""
@@ -63,7 +95,7 @@ def main():
         print(f"Errore Critico: Impossibile recuperare la pagina principale. {e}")
         return
 
-    # 2. Salva l'istantanea HTML giornaliera (copia grezza)
+    # 2. Salva l'istantanea HTML giornaliera
     snapshot_filename = f"albo_{today_str}.html"
     snapshot_path = os.path.join(HTML_DIR, snapshot_filename)
     with open(snapshot_path, "w", encoding="utf-8") as f:
@@ -76,61 +108,63 @@ def main():
     
     new_items = []
     
-    # Logica: Cerca tutti i tag 'a' (link).
-    # Adatta i filtri in base alla struttura specifica del sito.
-    # Pattern comune: link che finiscono in .pdf o contengono testo specifico.
     links = soup.find_all('a', href=True)
     
     for link in links:
         href = link['href']
         text = link.get_text(" ", strip=True)
         
-        # Filtro: Cerchiamo link ai documenti.
-        # Spesso identificati dall'estensione o da parole chiave nel testo come "[file.pdf]"
+        # Logica di filtro: controlla estensione .pdf o parole chiave "file" + "pdf"
         is_document = False
         if href.lower().endswith('.pdf'):
             is_document = True
-        elif "file.pdf" in text.lower():
+        elif "file" in text.lower() and "pdf" in text.lower():
             is_document = True
             
-        # A volte i link sono relativi, li standardizziamo
+        # Standardizzazione URL
         if href.startswith('/'):
             full_url = BASE_DOMAIN + href
         elif href.startswith('http'):
             full_url = href
         else:
-            # Salta javascript: o ancore interne
             continue
 
         if is_document:
-            # Controllo duplicati (se l'abbiamo già scaricato in passato)
+            # Controlla se l'URL è già stato processato
             if full_url not in history:
                 print(f"Trovato nuovo documento: {text}")
                 
-                # Crea un nome file locale univoco
-                local_filename = f"{today_str}_{get_filename_from_url(full_url)}"
-                local_path = os.path.join(PDF_DIR, local_filename)
+                # Genera nuovo nome file basato su Titolo + Data (o Data Fallback)
+                filename = clean_filename_from_title(text)
+                local_path = os.path.join(PDF_DIR, filename)
                 
-                # Esegui il download
+                # Gestione collisione nomi file (se due file risultano avere lo stesso nome)
+                counter = 1
+                while os.path.exists(local_path):
+                    name, ext = os.path.splitext(filename)
+                    local_path = os.path.join(PDF_DIR, f"{name}_v{counter}{ext}")
+                    counter += 1
+                    
+                # Download
                 if download_file(full_url, local_path):
-                    # Aggiorna la Cronologia
+                    # Salva solo il nome file nella cronologia
+                    saved_filename = os.path.basename(local_path)
+                    
                     history[full_url] = {
                         "first_seen": today_str,
-                        "local_path": local_filename,
+                        "local_path": saved_filename,
                         "link_text": text
                     }
                     
-                    # Aggiungi al report giornaliero
                     new_items.append({
                         "text": text,
                         "url": full_url,
-                        "file": local_filename
+                        "file": saved_filename
                     })
                     
-                    # Pausa per essere gentili con il server
                     time.sleep(1) 
 
-    # 4. Salva la cronologia aggiornata su disco
+    # 4. Salva la cronologia aggiornata
     save_history(history)
 
     # 5. Compila il Memo Giornaliero
@@ -145,7 +179,7 @@ def main():
         if new_items:
             f.write(f"Totale Nuovi Documenti: {len(new_items)}\n\n")
             for item in new_items:
-                f.write(f"Titolo: {item['text']}\n")
+                f.write(f"Titolo Originale: {item['text']}\n")
                 f.write(f"URL: {item['url']}\n")
                 f.write(f"Salvato come: {item['file']}\n")
                 f.write("-" * 20 + "\n")
