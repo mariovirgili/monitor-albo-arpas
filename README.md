@@ -1,6 +1,6 @@
 # Archiviatore Albo Pretorio ARPAS (Sardegna Ambiente)
 
-Questo progetto contiene uno script Python automatizzato progettato per monitorare, scaricare e archiviare quotidianamente le determinazioni e i documenti pubblicati sull'Albo Pretorio di Sardegna Ambiente (ARPAS).
+Questo progetto contiene uno script Python automatizzato, che si aggiorna di mattina, progettato per monitorare, scaricare e archiviare quotidianamente le determinazioni e i documenti pubblicati sull'Albo Pretorio di Sardegna Ambiente (ARPAS).
 
 Lo script è pensato per garantire la **persistenza dei dati**: salva i file localmente con nomi leggibili e mantiene uno storico per evitare duplicati, anche se i documenti vengono rimossi dal sito originale.
 
@@ -35,7 +35,8 @@ Una volta eseguito, lo script crea e gestisce automaticamente la seguente strutt
 ```
 
 
-======================================================================
+
+
 📄 Descrizione dei File Generati
 1. I Documenti (archive_data/pdfs/)
 I file vengono salvati con la seguente convenzione di nomenclatura per facilitare l'ordinamento cronologico: AAAA-MM-GG_Titolo_Del_Documento_Normalizzato.pdf
@@ -45,39 +46,52 @@ Vengono rimossi caratteri speciali e diciture come [file.pdf].
 Gli spazi sono sostituiti da underscore _.
 
 2. I Memo (archive_data/memos/)
+
 Ogni giorno in cui vengono trovati nuovi file, viene creato un file .txt strutturato così:
 
-Plaintext
+---------------------
+
 MEMO GIORNALIERO - 2026-01-28
-Fonte: [https://www.sardegnaambiente.it/](https://www.sardegnaambiente.it/)...
-========================================
 
 Totale Nuovi Documenti: 1
 
 Titolo Originale: Determinazione n. 88 del 28/01/2026 [file.pdf]
+
 URL: https://.../documento_originale.pdf
+
 Salvato come: 2026-01-28_Determinazione_n_88.pdf
-Contenuto: IMPEGNO DI SPESA SPESE DI MISSIONE...
+
+Contenuto: IMPEGNO DI SPESA SPESE DI MISSIONE..
+
 --------------------
+
+
 3. Database Storico (archive_data/history.json)
+
 Un file JSON tecnico che mappa l'URL originale del file con il nome locale. Serve allo script per "ricordare" cosa ha già scaricato e non riscaricare gli stessi file il giorno successivo.
 
 🛠️ Installazione e Utilizzo
+
 Prerequisiti
+
 Python 3.x installato.
 
 Librerie richieste: requests, beautifulsoup4.
 
 Installazione Dipendenze
+
 Esegui questo comando nel terminale:
 
 Bash
 pip install requests beautifulsoup4
+
 Esecuzione Manuale
+
 Per lanciare l'archiviazione immediatamente:
 
 Bash
 python archiver.py
+
 Automazione (Opzionale)
 Lo script è ottimizzato per essere eseguito una volta al giorno tramite:
 
