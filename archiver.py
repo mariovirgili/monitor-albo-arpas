@@ -34,37 +34,36 @@ def save_history(history):
 
 def clean_filename_from_title(title):
     """
-    Genera un nome file basato sul titolo del documento e la sua data interna.
-    Fallback: Se non viene trovata alcuna data nel titolo, utilizza la data odierna.
-    Formato finale: AAAA-MM-GG_Titolo_con_underscore.pdf
+    Genera un nome file pulito basato sul titolo del documento e la sua data.
+    Rimuove etichette come [file.pdf] e gestisce il formato della data.
     """
-    # 1. Pulisce il testo "spazzatura" come [file.pdf]
-    clean_title = title.replace("[file.pdf]", "").replace("[file. pdf]", "").strip()
+    # 1. Pulizia Aggressiva (Regex): Rimuove qualsiasi variante di [file.pdf]
+    # Cerca parentesi quadra aperta + parola 'file' + qualsiasi carattere + 'pdf' + eventuale parentesi chiusa
+    # flags=re.IGNORECASE rende la ricerca insensibile a maiuscole/minuscole
+    clean_title = re.sub(r"\[\s*file.*?pdf\s*\]?", "", title, flags=re.IGNORECASE).strip()
     
     # Fallback predefinito: Usa la data di oggi se non si trova una data nel testo
     file_date_prefix = datetime.now().strftime("%Y-%m-%d")
     
-    # 2. Estrae la data (gg/mm/aaaa) dal titolo
-    # La regex cerca giorno/mese/anno
+    # 2. Estrae la data (gg/mm/aaaa) dal titolo pulito
     date_match = re.search(r"(\d{1,2})/(\d{1,2})/(\d{4})", clean_title)
     
     if date_match:
         day, month, year = date_match.groups()
-        # Crea la data in formato ISO: AAAA-MM-GG dalla data trovata
+        # Crea la data in formato ISO: AAAA-MM-GG
         file_date_prefix = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
         
         # 3. Rimuove la data e la parola "del" dal titolo per evitare duplicazioni
-        # Viene fatto solo se una data è stata effettivamente trovata nel titolo
         clean_title = re.sub(r"\s*(del)?\s*" + re.escape(date_match.group(0)), "", clean_title, flags=re.IGNORECASE)
 
-    # 4. Sanifica il titolo rimanente
-    # Rimuove caratteri non validi per i nomi file (come / \ : * ? " < > |)
+    # 4. Sanifica il titolo rimanente per il filesystem
+    # Rimuove caratteri vietati nei nomi file
     clean_title = re.sub(r'[\\/*?:"<>|]', "", clean_title)
     # Sostituisce gli spazi con underscore
     clean_title = clean_title.replace(" ", "_")
     # Collassa underscore multipli in uno solo
     clean_title = re.sub(r"_+", "_", clean_title)
-    # Rimuove underscore o punti iniziali/finali
+    # Rimuove underscore o punti iniziali/finali residui
     clean_title = clean_title.strip("_. ")
 
     return f"{file_date_prefix}_{clean_title}.pdf"
@@ -114,7 +113,7 @@ def main():
         href = link['href']
         text = link.get_text(" ", strip=True)
         
-        # Logica di filtro: controlla estensione .pdf o parole chiave "file" + "pdf"
+        # Filtro: cerca estensione .pdf o testo contenente "file" e "pdf"
         is_document = False
         if href.lower().endswith('.pdf'):
             is_document = True
@@ -130,15 +129,15 @@ def main():
             continue
 
         if is_document:
-            # Controlla se l'URL è già stato processato
+            # Controllo se già scaricato
             if full_url not in history:
                 print(f"Trovato nuovo documento: {text}")
                 
-                # Genera nuovo nome file basato su Titolo + Data (o Data Fallback)
+                # Generazione nome file pulito
                 filename = clean_filename_from_title(text)
                 local_path = os.path.join(PDF_DIR, filename)
                 
-                # Gestione collisione nomi file (se due file risultano avere lo stesso nome)
+                # Gestione duplicati nome file (aggiunge _v1, _v2 se necessario)
                 counter = 1
                 while os.path.exists(local_path):
                     name, ext = os.path.splitext(filename)
@@ -147,7 +146,7 @@ def main():
                     
                 # Download
                 if download_file(full_url, local_path):
-                    # Salva solo il nome file nella cronologia
+                    # Salva nome file pulito nella history
                     saved_filename = os.path.basename(local_path)
                     
                     history[full_url] = {
