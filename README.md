@@ -38,61 +38,62 @@ Una volta eseguito, lo script crea e gestisce automaticamente la seguente strutt
 
 
 📄 Descrizione dei File Generati
-1. I Documenti (archive_data/pdfs/)
+* 1. **i Documenti (archive_data/pdfs/)**
+
 I file vengono salvati con la seguente convenzione di nomenclatura per facilitare l'ordinamento cronologico: AAAA-MM-GG_Titolo_Del_Documento_Normalizzato.pdf
 
 Vengono rimossi caratteri speciali e diciture come [file.pdf].
 
 Gli spazi sono sostituiti da underscore _.
 
-2. I Memo (archive_data/memos/)
+
+* 2. **i Memo (archive_data/memos/)**
 
 Ogni giorno in cui vengono trovati nuovi file, viene creato un file .txt strutturato così:
 
----------------------
+```---------------------
 
 MEMO GIORNALIERO - 2026-01-28
 
 Totale Nuovi Documenti: 1
 
 Titolo Originale: Determinazione n. 88 del 28/01/2026 [file.pdf]
-
 URL: https://.../documento_originale.pdf
-
 Salvato come: 2026-01-28_Determinazione_n_88.pdf
-
 Contenuto: IMPEGNO DI SPESA SPESE DI MISSIONE..
+---------------------------
+```
 
---------------------
 
 
-3. Database Storico (archive_data/history.json)
+* 3. **Database Storico (archive_data/history.json)**
 
 Un file JSON tecnico che mappa l'URL originale del file con il nome locale. Serve allo script per "ricordare" cosa ha già scaricato e non riscaricare gli stessi file il giorno successivo.
 
 🛠️ Installazione e Utilizzo
 
-Prerequisiti
+* Prerequisiti
 
 Python 3.x installato.
 
 Librerie richieste: requests, beautifulsoup4.
 
-Installazione Dipendenze
+* Installazione Dipendenze
 
 Esegui questo comando nel terminale:
 
-Bash
+```Bash
 pip install requests beautifulsoup4
-
+```
 Esecuzione Manuale
 
 Per lanciare l'archiviazione immediatamente:
 
-Bash
+```Bash
 python archiver.py
+```
 
-Automazione (Opzionale)
+* Automazione (Opzionale)
 Lo script è ottimizzato per essere eseguito una volta al giorno tramite:
 
 Windows: Utilità di Pianificazione (Task Scheduler).
@@ -100,6 +101,7 @@ Windows: Utilità di Pianificazione (Task Scheduler).
 Linux/Mac: Crontab.
 
 Cloud: GitHub Actions (tramite workflow .yml).
+
 
 ⚠️ Note Tecniche
 Lo script include un ritardo di 1 secondo (time.sleep(1)) tra un download e l'altro per non sovraccaricare il server della PA.
