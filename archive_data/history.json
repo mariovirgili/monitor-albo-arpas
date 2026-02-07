@@ -412,5 +412,53 @@
         "local_path": "2026-02-05_ALLEGATO.pdf",
         "link_text": "ALLEGATO [file.pdf]",
         "content_preview": "Descrizione non disponibile nel testo adiacente."
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206112024.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-02-05_Determinazione_del_Laboratorio_Cagliari_n._159.pdf",
+        "link_text": "Determinazione del Laboratorio Cagliari n. 159 del 05/02/2026 [file.pdf]",
+        "content_preview": "Affidamento diretto per l\u00e2\u0080\u0099acquisizione della fornitura di materiale di consumo per strumentazione "
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206115826.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-02-04_Determinazione_del_Servizio_Qualit\u00c3\u00a0_dei_laboratori_e_procedure_operative_n._158.pdf",
+        "link_text": "Determinazione del Servizio Qualit\u00c3\u00a0 dei laboratori e procedure operative n. 158 del 04/02/2026 [file.pdf]",
+        "content_preview": "Integrazione del provvedimento ID 110 - Numero Protocollo 0004847 del 04/02/2026 con oggetto: Nota d"
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206115748.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-02-04_Determinazione_del_Servizio_Qualit\u00c3\u00a0_dei_laboratori_e_procedure_operative_n._157.pdf",
+        "link_text": "Determinazione del Servizio Qualit\u00c3\u00a0 dei laboratori e procedure operative n. 157 del 04/02/2026 [file.pdf]",
+        "content_preview": "Integrazione del provvedimento ID 122 - Numero Protocollo 0004468 del 03/02/2026 con oggetto: Nota d"
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206120221.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-02-04_Determinazione_del_Servizio_Tecnico_n._156.pdf",
+        "link_text": "Determinazione del Servizio Tecnico n. 156 del 04/02/2026 [file.pdf]",
+        "content_preview": "Lavori di ristrutturazione e adeguamento della nuova sede del Dipartimento Meteoclimatico di ARPAS ("
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206114934.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-01-30_Determinazione_del_Servizio_Qualit\u00c3\u00a0_dei_laboratori_e_procedure_operative_n._138.pdf",
+        "link_text": "Determinazione del Servizio Qualit\u00c3\u00a0 dei laboratori e procedure operative n. 138 del 30/01/2026 [file.pdf]",
+        "content_preview": "ACCORDO QUADRO PER LA \u00e2\u0080\u009cFORNITURA DI GAS TECNICI PER I LABORATORI E LE ALTRE STRUTTURE ARPAS MEDIAN"
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206114016.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-01-29_Determinazione_del_Servizio_Tecnico_n._124.pdf",
+        "link_text": "Determinazione del Servizio Tecnico n. 124 del 29/01/2026 [file.pdf]",
+        "content_preview": "AFFIDAMENTO DIRETTO DEL \"SERVIZIO DI GESTIONE PRATICHE DICONNESSIONE IMPIANTI FOTOVOLTAICI\" - CIG BA"
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206113818.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-01-29_Determinazione_del_Servizio_Tecnico_n._123.pdf",
+        "link_text": "Determinazione del Servizio Tecnico n. 123 del 29/01/2026 [file.pdf]",
+        "content_preview": "Annullamento del provvedimento ID 17 - Numero Protocollo 0003814 del 29/01/2026 con oggetto: Nota di"
+    },
+    "https://www.sardegnaambiente.it/documenti/21_490_20260206113526.pdf": {
+        "first_seen": "2026-02-07",
+        "local_path": "2026-01-29_Determinazione_del_Servizio_Tecnico_n._120.pdf",
+        "link_text": "Determinazione del Servizio Tecnico n. 120 del 29/01/2026 [file.pdf]",
+        "content_preview": "AFFIDAMENTO DIRETTO DEL \"SERVIZIO DI GESTIONE PRATICHE DI CONNESSIONE IMPIANTI FOTOVOLTAICI\" - CIG B"
     }
 }
